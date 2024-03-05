@@ -6,11 +6,40 @@
 {{/isESP8266}}
 
 {{#isESP32}}
-#include "HTTPClient.h"
+#include <WiFiClientSecure.h>
+#include <ArduinoHttpClient.h>
 {{/isESP32}}
-#include "Response.h"
 #include <list>
+
 namespace Tiny {
+
+/**
+*  Class
+* Generated with openapi::tiny-cpp-client
+*/
+class ApiConfiguration {
+    private:
+        String host = "";
+        uint16_t port;
+        String apiKey;
+        String sslCertificate;
+
+    public:
+        // Constructor
+        ApiConfiguration();
+
+        // Getters
+        String getHost() const;
+        uint16_t getPort() const;
+        String getApiKey() const;
+        String getSslCertificate() const;
+
+        // Setters
+        void setHost(const String host);
+        void setPort(const uint16_t port);
+        void setApiKey(String apiKey);
+        void setSslCertificate(String sslCertificate);
+};
 
 /**
 *  Class
@@ -18,30 +47,32 @@ namespace Tiny {
 */
 class Service {
     public:
-        HTTPClient http;
+        std::unique_ptr<HttpClient> client;
         {{#isESP8266}}
         WiFiClient client;
         {{/isESP8266}}
-        std::string basepath = "https://petstore3.swagger.io/api/v3"; // TODO: change to your url
+        {{#isESP32}}
+        WiFiClientSecure wifiClient;
+        {{/isESP32}}
+        std::string basepath = "";
+        String host = "";
+        uint16_t port;
+        String apiKey;
+        String sslCertificate = "";
         std::string url = "";
         std::string payload = "";
         std::list<std::tuple<std::string, std::string>> queryParams;
         std::list<std::tuple<std::string, std::string>> formParams;
 
+        Service();
+
+        void setApiConfiguration(const ApiConfiguration conf);
         int sendRequest(std::string url, const char * type, uint8_t * payload, size_t size);
         String getResponseBody();
 
         void addQueryParam(std::string key, std::string value);
         void addFormParam(std::string key, std::string value);
         void addHeader(std::string key, std::string value);
-
-        {{#isESP32}}
-        // Go and comment out a certificate in root.cert, if you get an error here
-        // Certificate from file
-        const char* test_root_ca =
-        #include "../../root.cert"
-        ;
-        {{/isESP32}}
 
     private:
         void begin(std::string url);

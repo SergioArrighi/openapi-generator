@@ -1,5 +1,59 @@
 #include "Service.h"
 #include "Arduino.h"
+#include <WiFiClientSecure.h>
+#include <ArduinoHttpClient.h>
+
+// Constructor implementation
+Tiny::ApiConfiguration::ApiConfiguration() {
+    // Initialize with default values
+    host = "";
+    port = 0;
+    apiKey = "";
+    sslCertificate = "";
+}
+
+// Getters implementation
+String Tiny::ApiConfiguration::getHost() const {
+    return host;
+}
+
+uint16_t Tiny::ApiConfiguration::getPort() const {
+    return port;
+}
+
+String Tiny::ApiConfiguration::getApiKey() const {
+    return apiKey;
+}
+
+String Tiny::ApiConfiguration::getSslCertificate() const {
+    return sslCertificate;
+}
+
+// Setters implementation
+void Tiny::ApiConfiguration::setHost(const String host) {
+    this->host = host;
+}
+
+void Tiny::ApiConfiguration::setPort(const uint16_t port) {
+    this->port = port;
+}
+
+void Tiny::ApiConfiguration::setApiKey(const String apiKey) {
+    this->apiKey = apiKey;
+}
+
+void Tiny::ApiConfiguration::setSslCertificate(const String sslCertificate) {
+    this->sslCertificate = sslCertificate;
+}
+
+Tiny::Service::Service() {}
+
+void Tiny::Service::setApiConfiguration(ApiConfiguration conf){
+    this->host = conf.getHost();
+    this->port = conf.getPort();
+    this->sslCertificate = conf.getSslCertificate();
+    this->apiKey = conf.getApiKey();
+}
 
 {{#isESP8266}}
 void Tiny::Service::begin(std::string url){
@@ -12,8 +66,8 @@ void Tiny::Service::begin(std::string url){
 {{/isESP8266}}
 {{#isESP32}}
 void Tiny::Service::begin(std::string url){
-    http.begin(String(url.c_str()), test_root_ca); //HTTPS connection
-
+    this->wifiClient.setInsecure();
+    this->client.reset(new HttpClient(this->wifiClient, this->host, this->port));
 
     // reset params
     queryParams.begin();
@@ -22,7 +76,7 @@ void Tiny::Service::begin(std::string url){
 {{/isESP32}}
 
 void Tiny::Service::addHeader(std::string key, std::string value){
-    http.addHeader(String(key.c_str()), String(value.c_str()));
+    this->client->sendHeader(String(key.c_str()), String(value.c_str()));
 }
 
 void Tiny::Service::addQueryParam(std::string key, std::string value){
@@ -39,7 +93,12 @@ int Tiny::Service::sendRequest(std::string url, const char * type, uint8_t * pay
 
     begin(this->url);
 
-    int httpCode = http.sendRequest(type, payload, size);
+    client->beginRequest();
+    client->get((this->url).c_str());
+    this->addHeader("X-API-Key", this->apiKey.c_str());
+    client->endRequest();
+
+    int httpCode = client->responseStatusCode();
     return httpCode;
 }
 
@@ -68,8 +127,7 @@ std::string Tiny::Service::encodeKeyValueTuple(std::list<std::tuple<std::string,
 
 
 String Tiny::Service::getResponseBody(){
-    String respBody = http.getString();
-    http.end();
-    return respBody;
+    String response = client->responseBody();
+    return response;
 }
 

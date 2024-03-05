@@ -146,7 +146,8 @@ using namespace Tiny;
             {{#isArray}}
 
             std::list<{{returnBaseType}}> obj = std::list<{{returnBaseType}}>();
-            bourne::json jsonPayload(output_string);
+            std::error_code error;
+            bourne::json jsonPayload = bourne::json::parse(output_string, error);
 
             {{#returnBaseType}}
 

@@ -134,7 +134,7 @@ public class CppTinyClientCodegen extends AbstractCppCodegen implements CodegenC
 
         String libFolder = "lib";
         // MODELS
-        modelPackage = libFolder + File.separator + "Models";
+        modelPackage = libFolder + File.separator + "models";
         modelTemplateFiles.put("model-header.mustache", ".h");
         modelTemplateFiles.put("model-body.mustache", ".cpp");
 
@@ -143,7 +143,7 @@ public class CppTinyClientCodegen extends AbstractCppCodegen implements CodegenC
         supportingFiles.add(new SupportingFile("helpers-body.mustache", modelPackage, "Helpers.cpp"));
 
         // MODELS: TESTS
-        testPackage = libFolder + File.separator + "TestFiles";
+        testPackage = libFolder + File.separator + "test";
         modelTestTemplateFiles.put("unit-test-model.mustache", ".cpp");
         supportingFiles.add(new SupportingFile("run-tests.mustache", "test", "RunTests.cpp"));
 
@@ -299,7 +299,7 @@ public class CppTinyClientCodegen extends AbstractCppCodegen implements CodegenC
         } else if (name.equals("Map")) {
             return "#include <map>";
         }
-        return "#include \"" + name + ".h\"";
+        return "#include \"../models/" + name + ".h\"";
     }
 
     @Override
