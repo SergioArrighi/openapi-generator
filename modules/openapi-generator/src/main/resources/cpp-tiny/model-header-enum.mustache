@@ -1,0 +1,21 @@
+#ifndef TINY_CPP_CLIENT_{{classname}}_H_
+#define TINY_CPP_CLIENT_{{classname}}_H_
+
+#include <string>
+#include "bourne/json.hpp"
+
+namespace Tiny {
+
+enum {{classname}} {
+    Unknown = 0,
+    {{#allowableValues}}{{#enumVars}}
+    {{{value}}}{{^-last}},{{/-last}}
+    {{/enumVars}}{{/allowableValues}}
+};
+
+std::string toString({{classname}} value);
+{{classname}} toEnum(const std::string& str);
+
+} // namespace Tiny
+
+#endif /* TINY_CPP_CLIENT_{{classname}}_H_ */

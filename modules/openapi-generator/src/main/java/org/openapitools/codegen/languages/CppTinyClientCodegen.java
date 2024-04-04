@@ -107,7 +107,6 @@ public class CppTinyClientCodegen extends AbstractCppCodegen implements CodegenC
                         ParameterFeature.Query
                 )
                 .excludeDataTypeFeatures(
-                        DataTypeFeature.Enum,
                         DataTypeFeature.Maps,
                         DataTypeFeature.MapOfCollectionOfEnum,
                         DataTypeFeature.MapOfCollectionOfModel,

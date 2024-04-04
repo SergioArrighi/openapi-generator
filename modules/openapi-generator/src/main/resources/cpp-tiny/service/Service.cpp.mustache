@@ -8,12 +8,13 @@ Tiny::ApiConfiguration::ApiConfiguration() {
     // Initialize with default values
     host = "";
     port = 0;
+    apiKeyHeaderName = "";
     apiKey = "";
     sslCertificate = "";
 }
 
 // Getters implementation
-String Tiny::ApiConfiguration::getHost() const {
+std::string Tiny::ApiConfiguration::getHost() const {
     return host;
 }
 
@@ -21,16 +22,20 @@ uint16_t Tiny::ApiConfiguration::getPort() const {
     return port;
 }
 
-String Tiny::ApiConfiguration::getApiKey() const {
+std::string Tiny::ApiConfiguration::getApiKeyHeaderName() const {
+    return apiKeyHeaderName;
+}
+
+std::string Tiny::ApiConfiguration::getApiKey() const {
     return apiKey;
 }
 
-String Tiny::ApiConfiguration::getSslCertificate() const {
+std::string Tiny::ApiConfiguration::getSslCertificate() const {
     return sslCertificate;
 }
 
 // Setters implementation
-void Tiny::ApiConfiguration::setHost(const String host) {
+void Tiny::ApiConfiguration::setHost(const std::string host) {
     this->host = host;
 }
 
@@ -38,21 +43,27 @@ void Tiny::ApiConfiguration::setPort(const uint16_t port) {
     this->port = port;
 }
 
-void Tiny::ApiConfiguration::setApiKey(const String apiKey) {
+void Tiny::ApiConfiguration::setApiKeyHeaderName(const std::string apiKeyHeaderName) {
+    this->apiKeyHeaderName = apiKeyHeaderName;
+}
+
+void Tiny::ApiConfiguration::setApiKey(const std::string apiKey) {
     this->apiKey = apiKey;
 }
 
-void Tiny::ApiConfiguration::setSslCertificate(const String sslCertificate) {
+void Tiny::ApiConfiguration::setSslCertificate(const std::string sslCertificate) {
     this->sslCertificate = sslCertificate;
 }
 
 Tiny::Service::Service() {}
 
 void Tiny::Service::setApiConfiguration(ApiConfiguration conf){
-    this->host = conf.getHost();
-    this->port = conf.getPort();
-    this->sslCertificate = conf.getSslCertificate();
-    this->apiKey = conf.getApiKey();
+    host = conf.getHost();
+    port = conf.getPort();
+    apiKeyHeaderName = conf.getApiKeyHeaderName();
+    apiKey = conf.getApiKey();
+    sslCertificate = conf.getSslCertificate();
+    client.reset(new HttpClient(this->wifiClient, this->host.c_str(), this->port));
 }
 
 {{#isESP8266}}
@@ -66,8 +77,7 @@ void Tiny::Service::begin(std::string url){
 {{/isESP8266}}
 {{#isESP32}}
 void Tiny::Service::begin(std::string url){
-    this->wifiClient.setInsecure();
-    this->client.reset(new HttpClient(this->wifiClient, this->host, this->port));
+    wifiClient.setInsecure();
 
     // reset params
     queryParams.begin();
@@ -76,39 +86,47 @@ void Tiny::Service::begin(std::string url){
 {{/isESP32}}
 
 void Tiny::Service::addHeader(std::string key, std::string value){
-    this->client->sendHeader(String(key.c_str()), String(value.c_str()));
+    client->sendHeader(String(key.c_str()), String(value.c_str()));
 }
 
 void Tiny::Service::addQueryParam(std::string key, std::string value){
-    formParams.push_back(std::make_tuple(key, value));
+    queryParams.push_back(std::make_tuple(key, value));
 }
 
 void Tiny::Service::addFormParam(std::string key, std::string value){
     formParams.push_back(std::make_tuple(key, value));
 }
 
-int Tiny::Service::sendRequest(std::string url, const char * type, uint8_t * payload, size_t size){
+int Tiny::Service::sendRequest(std::string url, const char * method, const char * type, const char * payload, size_t size){
     this->url = url;
     prepareRequest();
-
     begin(this->url);
-
     client->beginRequest();
-    client->get((this->url).c_str());
-    this->addHeader("X-API-Key", this->apiKey.c_str());
-    client->endRequest();
-
+    if (method == HTTP_METHOD_GET) {
+        client->get((this->url).c_str());
+        if (!apiKeyHeaderName.empty() && !apiKey.empty())
+            client->sendHeader(apiKeyHeaderName.c_str(), apiKey.c_str());
+        client->endRequest();
+    } else if (method == HTTP_METHOD_POST) {
+        client->post((this->url).c_str());
+        client->sendHeader(HTTP_HEADER_CONTENT_TYPE, type);
+        client->sendHeader(HTTP_HEADER_CONTENT_LENGTH, strlen(payload));
+        if (!apiKeyHeaderName.empty() && !apiKey.empty())
+            client->sendHeader(apiKeyHeaderName.c_str(), apiKey.c_str());
+        client->endRequest();
+        client->print(payload);
+    }
     int httpCode = client->responseStatusCode();
     return httpCode;
 }
 
 void Tiny::Service::prepareRequest(){
     if (!queryParams.empty()){
-        this->url += "?" + encodeKeyValueTuple(this->queryParams);
+        url += "?" + encodeKeyValueTuple(queryParams);
     }
 
     if (!formParams.empty()){
-        this->payload = encodeKeyValueTuple(this->formParams);
+        payload = encodeKeyValueTuple(formParams);
     }
 }
 

@@ -39,7 +39,7 @@ using namespace Tiny;
         )
         {{! Method start}}
         {
-            std::string url = basepath + "{{{path}}}"; //{{#pathParams}}{{{paramName}}} {{/pathParams}}
+            std::string url = "{{{path}}}"; //{{#pathParams}}{{{paramName}}} {{/pathParams}}
 
 
             // Headers  | {{#headerParams}} {{paramName}} {{/headerParams}}
@@ -59,12 +59,13 @@ using namespace Tiny;
         {{/isArray}}
         {{/queryParams}}
 
-            // Form     | {{#formParams}}{{paramName}} {{/formParams}}
+        std::string type = "";
         {{#hasFormParams}}
-            addHeader("Content-Type", "application/x-www-form-urlencoded");
+            // Form     | {{#formParams}}{{paramName}} {{/formParams}}
+            type = "application/x-www-form-urlencoded";
         {{/hasFormParams}}
         {{#hasBodyParam}}
-            addHeader("Content-Type", "application/json");
+            type = "application/json";
         {{/hasBodyParam}}
 
         {{#formParams}}
@@ -134,7 +135,7 @@ using namespace Tiny;
             {{/isContainer}}
 
             {{/bodyParam}}
-            int httpCode = sendRequest(url, "{{httpMethod}}", reinterpret_cast<uint8_t*>(&payload[0]), payload.length());
+            int httpCode = sendRequest(url, "{{httpMethod}}", type.c_str(), payload.c_str(), payload.length());
 
             // Handle Request
             String output = getResponseBody();

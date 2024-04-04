@@ -1,0 +1,19 @@
+#include "{{classname}}.h"
+
+using namespace Tiny;
+
+std::string Tiny::toString({{classname}} value) {
+    switch (value) {
+        {{#allowableValues}}{{#enumVars}}
+        case {{{value}}}: return "{{{value}}}";
+        {{/enumVars}}{{/allowableValues}}
+        default: return "Unknown";
+    }
+}
+
+{{classname}} Tiny::toEnum(const std::string& str) {
+    {{#allowableValues}}{{#enumVars}}
+    if (str == "{{{value}}}") return {{{value}}};
+    {{/enumVars}}{{/allowableValues}}
+    return Unknown; // Default case
+}

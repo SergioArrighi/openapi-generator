@@ -19,26 +19,29 @@ namespace Tiny {
 */
 class ApiConfiguration {
     private:
-        String host = "";
+        std::string host = "";
         uint16_t port;
-        String apiKey;
-        String sslCertificate;
+        std::string apiKeyHeaderName;
+        std::string apiKey;
+        std::string sslCertificate;
 
     public:
         // Constructor
         ApiConfiguration();
 
         // Getters
-        String getHost() const;
+        std::string getHost() const;
         uint16_t getPort() const;
-        String getApiKey() const;
-        String getSslCertificate() const;
+        std::string getApiKeyHeaderName() const;
+        std::string getApiKey() const;
+        std::string getSslCertificate() const;
 
         // Setters
-        void setHost(const String host);
+        void setHost(const std::string host);
         void setPort(const uint16_t port);
-        void setApiKey(String apiKey);
-        void setSslCertificate(String sslCertificate);
+        void setApiKeyHeaderName(const std::string apiKeyHeaderName);
+        void setApiKey(const std::string apiKey);
+        void setSslCertificate(const std::string sslCertificate);
 };
 
 /**
@@ -54,11 +57,11 @@ class Service {
         {{#isESP32}}
         WiFiClientSecure wifiClient;
         {{/isESP32}}
-        std::string basepath = "";
-        String host = "";
+        std::string host = "";
         uint16_t port;
-        String apiKey;
-        String sslCertificate = "";
+        std::string apiKeyHeaderName = "";
+        std::string apiKey;
+        std::string sslCertificate = "";
         std::string url = "";
         std::string payload = "";
         std::list<std::tuple<std::string, std::string>> queryParams;
@@ -67,7 +70,7 @@ class Service {
         Service();
 
         void setApiConfiguration(const ApiConfiguration conf);
-        int sendRequest(std::string url, const char * type, uint8_t * payload, size_t size);
+        int sendRequest(std::string url, const char * method, const char * type, const char * payload, size_t size);
         String getResponseBody();
 
         void addQueryParam(std::string key, std::string value);
@@ -80,6 +83,6 @@ class Service {
         std::string encodeKeyValueTuple(std::list<std::tuple<std::string, std::string>> params);
 
 }; // end class
-}// namespace Tinyclient
+} // namespace Tinyclient
 
 #endif /* TINY_CPP_CLIENT_ABSTRACTSERVICE_H_ */
