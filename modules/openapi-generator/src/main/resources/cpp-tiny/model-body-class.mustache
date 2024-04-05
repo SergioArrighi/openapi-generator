@@ -130,7 +130,8 @@ bourne::json
     {{^isContainer}}
 
     {{#isPrimitiveType}}
-    object["{{name}}"] = {{getter}}();
+    if (!{{getter}}().empty())
+        object["{{name}}"] = {{getter}}();
     {{/isPrimitiveType}}
 
     {{^isPrimitiveType}}
@@ -138,7 +139,8 @@ bourne::json
 	object["{{name}}"] = {{getter}}().toJson();
     {{/isEnumRef}}
     {{#isEnumRef}}
-    object["{{name}}"] = Tiny::toString({{getter}}());
+    if ({{getter}}() != Tiny::Unknown)
+        object["{{name}}"] = Tiny::toString({{getter}}());
     {{/isEnumRef}}
     {{/isPrimitiveType}}
 
