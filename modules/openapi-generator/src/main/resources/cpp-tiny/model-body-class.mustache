@@ -130,7 +130,12 @@ bourne::json
     {{^isContainer}}
 
     {{#isPrimitiveType}}
+    {{#isString}}
     if (!{{getter}}().empty())
+    {{/isString}}
+    {{#isNumeric}}
+    if ({{getter}}() > 0)
+    {{/isNumeric}}
         object["{{name}}"] = {{getter}}();
     {{/isPrimitiveType}}
 
