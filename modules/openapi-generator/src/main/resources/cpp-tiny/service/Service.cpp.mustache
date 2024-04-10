@@ -77,7 +77,7 @@ void Tiny::Service::begin(std::string url){
 {{/isESP8266}}
 {{#isESP32}}
 void Tiny::Service::begin(std::string url){
-    wifiClient.setInsecure();
+    wifiClient.setCACert(sslCertificate.c_str());
 
     // reset params
     queryParams.begin();
