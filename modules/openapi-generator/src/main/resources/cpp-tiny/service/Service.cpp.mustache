@@ -102,20 +102,21 @@ int Tiny::Service::sendRequest(std::string url, const char * method, const char 
     prepareRequest();
     begin(this->url);
     client->beginRequest();
-    if (method == HTTP_METHOD_GET) {
+    if (method == HTTP_METHOD_GET)
         client->get((this->url).c_str());
-        if (!apiKeyHeaderName.empty() && !apiKey.empty())
-            client->sendHeader(apiKeyHeaderName.c_str(), apiKey.c_str());
-        client->endRequest();
-    } else if (method == HTTP_METHOD_POST) {
+    else if (method == HTTP_METHOD_POST)
         client->post((this->url).c_str());
-        client->sendHeader(HTTP_HEADER_CONTENT_TYPE, type);
-        client->sendHeader(HTTP_HEADER_CONTENT_LENGTH, strlen(payload));
-        if (!apiKeyHeaderName.empty() && !apiKey.empty())
-            client->sendHeader(apiKeyHeaderName.c_str(), apiKey.c_str());
-        client->endRequest();
+    else if (method == HTTP_METHOD_PATCH)
+        client->patch((this->url).c_str());
+    else if (method == HTTP_METHOD_PUT)
+        client->put((this->url).c_str());
+    else if (method == HTTP_METHOD_DELETE)
+        client->delete((this->url).c_str());
+    if (!apiKeyHeaderName.empty() && !apiKey.empty())
+        client->sendHeader(apiKeyHeaderName.c_str(), apiKey.c_str());
+    client->endRequest();
+    if (method != HTTP_METHOD_GET && method != HTTP_METHOD_DELETE)
         client->print(payload);
-    }
     int httpCode = client->responseStatusCode();
     return httpCode;
 }
