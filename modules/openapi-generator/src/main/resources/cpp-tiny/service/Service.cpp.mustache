@@ -111,12 +111,15 @@ int Tiny::Service::sendRequest(std::string url, const char * method, const char 
     else if (method == HTTP_METHOD_PUT)
         client->put((this->url).c_str());
     else if (method == HTTP_METHOD_DELETE)
-        client->delete((this->url).c_str());
+        client->del((this->url).c_str());
     if (!apiKeyHeaderName.empty() && !apiKey.empty())
         client->sendHeader(apiKeyHeaderName.c_str(), apiKey.c_str());
-    client->endRequest();
-    if (method != HTTP_METHOD_GET && method != HTTP_METHOD_DELETE)
+    if (method != HTTP_METHOD_GET && method != HTTP_METHOD_DELETE) {
+        client->sendHeader(HTTP_HEADER_CONTENT_TYPE, type);
+        client->sendHeader(HTTP_HEADER_CONTENT_LENGTH, strlen(payload));
         client->print(payload);
+    }
+    client->endRequest();
     int httpCode = client->responseStatusCode();
     return httpCode;
 }
